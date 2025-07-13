@@ -31,7 +31,7 @@ def create_post():
 
     return jsonify( new_post), 201
 
-@app.route('/api/posts/<int:id>', methods=['GET', 'DELETE'])
+@app.route('/api/posts/<int:id>', methods=['GET', 'PUT', 'DELETE'])
 def post_by_id(id):
     """
     Handles operations on a single post identified by its ID.
@@ -40,7 +40,7 @@ def post_by_id(id):
         id (int): The ID of the post to fetch, update, or delete.
 
     GET: Returns the specified post.
-
+    PUT: Updates the specified post. Expects JSON with 'title' and 'content'.
     DELETE: Deletes the specified post.
     """
     post = next((p for p in POSTS if p['id'] == id), None)
@@ -56,6 +56,20 @@ def post_by_id(id):
         return jsonify(
             {"message": f"Post with id {id} has been deleted successfully."}
         ), 200
+
+    if request.method == 'PUT':
+        # Safely get data from the request body
+        title = request.json.get('title')
+        content = request.json.get('content')
+
+        if title and content:
+           post["title"] = title
+           post["content"] = content
+           return jsonify(post), 200
+        else:
+           return jsonify({"error": "Missing title or content"}), 400
+
+
 @app.errorhandler(404)
 def page_not_found(e):
     """Custom 404 error handler."""
