@@ -31,6 +31,31 @@ def create_post():
 
     return jsonify( new_post), 201
 
+@app.route('/api/posts/<int:id>', methods=['GET', 'DELETE'])
+def post_by_id(id):
+    """
+    Handles operations on a single post identified by its ID.
+
+    Args:
+        id (int): The ID of the post to fetch, update, or delete.
+
+    GET: Returns the specified post.
+
+    DELETE: Deletes the specified post.
+    """
+    post = next((p for p in POSTS if p['id'] == id), None)
+
+    if post is None:
+        return jsonify({"error": "Post not found"}), 404
+
+    if request.method == 'GET':
+        return jsonify(post), 200
+
+    if request.method == 'DELETE':
+        POSTS.remove(post)
+        return jsonify(
+            {"message": f"Post with id {id} has been deleted successfully."}
+        ), 200
 @app.errorhandler(404)
 def page_not_found(e):
     """Custom 404 error handler."""
