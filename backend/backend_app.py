@@ -14,6 +14,9 @@ POSTS = [
 def posts():
     if request.method == 'POST':
         return create_post()
+    sort_key = request.args.get('sort')
+    if sort_key:
+       return sort_posts(sort_key)
     return get_posts()
 
 def get_posts():
@@ -30,6 +33,16 @@ def create_post():
     POSTS.append( new_post)
 
     return jsonify( new_post), 201
+def sort_posts(sort_key):
+    direction = request.args.get('direction', 'asc')
+    reverse_order = (direction == 'desc')
+
+    sorted_posts = sorted(
+    POSTS,
+        key=lambda post: post.get(sort_key, '').lower(),
+        reverse=reverse_order
+         )
+    return jsonify(sorted_posts), 200
 
 @app.route('/api/posts/<int:id>', methods=['GET', 'PUT', 'DELETE'])
 def post_by_id(id):
