@@ -12,6 +12,18 @@ POSTS = [
 
 @app.route('/api/posts', methods=['GET', 'POST'])
 def posts():
+    """
+       Handles fetching all posts and creating a new post.
+
+       GET:
+           Returns a list of all posts. Can be sorted by 'title' or 'content'.
+           Query Params:
+               sort (str, optional): Field to sort by ('title', 'content').
+               direction (str, optional): Sort direction ('asc', 'desc').
+       POST:
+           Creates a new post. Expects a JSON body with 'title' and 'content'.
+           Returns the newly created post.
+    """
     if request.method == 'POST':
         return create_post()
     sort_key = request.args.get('sort')
@@ -20,9 +32,17 @@ def posts():
     return get_posts()
 
 def get_posts():
+    """
+        Returns a JSON list of all posts without sorting.
+    """
     return jsonify(POSTS), 200
 
 def create_post():
+    """
+        Creates a new post from JSON body.
+        Requires 'title' and 'content' in request.
+        Returns the newly created post or error if data is missing.
+    """
     if not request.json or  'title' not in request.json or 'content'  not in request.json:
         return jsonify({'error': 'Missing required parameters'}), 400
 
@@ -34,8 +54,23 @@ def create_post():
 
     return jsonify( new_post), 201
 def sort_posts(sort_key):
+    """
+        Sorts posts by a specified key.
+
+        Args:
+            sort_key (str): Field to sort by ('title', 'content', or 'id').
+
+        Query Params:
+            direction (str): 'asc' (default) or 'desc' for sorting order.
+
+        Returns:
+            JSON list of sorted posts or error if sort_key is invalid.
+    """
     direction = request.args.get('direction', 'asc')
     reverse_order = (direction == 'desc')
+
+    if sort_key not in ['title', 'content', 'id']:
+        return jsonify({"error": f"Invalid sort key: '{sort_key}'"}), 400
 
     sorted_posts = sorted(
     POSTS,
@@ -83,6 +118,16 @@ def post_by_id(id):
            return jsonify({"error": "Missing title or content"}), 400
 @app.route('/api/posts/search', methods= ['GET'])
 def search_posts():
+    """
+        Searches posts by title and/or content.
+
+        Query Params:
+            title (str): Substring to search in post titles.
+            content (str): Substring to search in post contents.
+
+        Returns:
+            JSON list of matching posts or error if no parameters provided.
+    """
     title_query = request.args.get('title')
     content_query = request.args.get('content')
 
@@ -118,4 +163,4 @@ def internal_server_error(e):
     return jsonify({"error": "Internal server error"}), 500
 
 if __name__ == '__main__':
-    app.run(host="0.0.0.0", port=5003, debug=True)
+    app.run(host="0.0.0.0", port=5002, debug=True)
