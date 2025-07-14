@@ -68,6 +68,29 @@ def post_by_id(id):
            return jsonify(post), 200
         else:
            return jsonify({"error": "Missing title or content"}), 400
+@app.route('/api/posts/search', methods= ['GET'])
+def search_posts():
+    title_query = request.args.get('title')
+    content_query = request.args.get('content')
+
+    if title_query is None and content_query is None:
+        return jsonify({"error": "Missing required parameters"}), 400
+        # Start with a copy of all posts to filter
+    results = POSTS[:]
+
+    if title_query:
+        results = [
+            post for post in results
+            if title_query.lower() in post['title'].lower()
+        ]
+
+    if content_query:
+        results = [
+            post for post in results
+            if content_query.lower() in post['content'].lower()
+        ]
+
+    return jsonify(results), 200
 
 
 @app.errorhandler(404)
@@ -82,4 +105,4 @@ def internal_server_error(e):
     return jsonify({"error": "Internal server error"}), 500
 
 if __name__ == '__main__':
-    app.run(host="0.0.0.0", port=5002, debug=True)
+    app.run(host="0.0.0.0", port=5003, debug=True)
